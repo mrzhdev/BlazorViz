@@ -1,0 +1,27 @@
+﻿@inject IJSRuntime JSRuntime
+@inject NavigationManager NavManager
+@using Microsoft.JSInterop
+@using DummyClassLibrary
+@page "/"
+
+
+<PageTitle>Graphviz visualisation for C#</PageTitle>
+<VizGraph></VizGraph>
+
+
+@code{
+
+    private Random random = new Random();
+
+    private Processing processing = new Processing();
+
+    public string JsVersionDebug { get => random.NextInt64().ToString(); }
+
+
+    public async Task VizRender(string ast) 
+    {
+         await JSRuntime.InvokeAsync<bool>("Render",ast);     
+    }
+
+
+}
