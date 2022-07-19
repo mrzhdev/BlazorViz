@@ -22,7 +22,8 @@ jobs:
 
     # publishes Blazor project to the release-folder
     - name: Publish .NET Core Project
-      run: dotnet publish BlazorViz/BlazorVizView.csproj -c Release -o release --nologo
+      working-directory: ./BlazorViz
+      run: dotnet publish BlazorVizView.csproj -c Release -o release --nologo
     
     # changes the base-tag in index.html from '/' to 'BlazorViz' to match GitHub Pages repository subdirectory
     - name: Change base-tag in index.html from / to BlazorViz
