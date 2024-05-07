@@ -1,7 +1,6 @@
 ﻿@inject IJSRuntime JSRuntime
 @inject NavigationManager NavManager
 @using Microsoft.JSInterop
-@using DummyClassLibrary
 
 <div>
     <strong>@Title</strong>
@@ -35,31 +34,61 @@
 
     private string expression;
 
-    private Processing processing = new Processing();
+    private string grammar;
 
+    private string dot;
     protected override async void OnInitialized()
     {
-        expression = "a = x + y * 5 / 4* (56 + 1);";
+        expression = "-58 * 2 /9 +(2 +2!) ";
+
+        grammar = @"
+genericLexer SimpleExpressionToken;
+
+[Double] DOUBLE;
+[Int] INT;
+
+[Sugar] PLUS : ""+"";
+[Sugar] INCREMENT : ""++"";
+[Sugar] MINUS : ""-"";
+[Sugar] TIMES : ""*"";
+[Sugar] DIVIDE : ""/"";
+[Sugar] LPAREN : ""("";
+[Sugar] RPAREN : "")"";
+[Sugar] FACTORIAL : ""!"";
+[AlphaNumId] ID;
+
+parser SimpleExpressionParser;
+
+[Right 10] PLUS;
+[Left 10] MINUS;
+[Right 50] TIMES;
+[Left 50] DIVIDE;
+[Prefix 100] MINUS;
+[Postfix 100] FACTORIAL;
+[Operand] operand : primary_value;
+primary_value : DOUBLE;
+primary_value : INT;
+primary_value : ID;
+primary_value : LPAREN SimpleExpressionParser_expressions RPAREN;
+-> root : SimpleExpressionParser_expressions;
+";
+
     }
 
 
     private async void Render()
     {
-        processing.Parse(expression);
-
-        if(processing.HasErrors())
+        var dotresult = CslyProcessor.GetDot(grammar, expression);
+        if (dotresult.IsOK)
         {
-            await AppendError(processing.Errors);
-        }
-        else
-        {
-            await VizRender(processing.GraphvizText);
+            dot = dotresult.Result;
+            await VizRender(dot);
         }
     }
 
-    public async Task VizRender(string ast) 
+    public async Task VizRender(string graph) 
     {
-        await JSRuntime.InvokeAsync<string>("vizRender",ast);     
+        await JSRuntime.InvokeAsync<string>("vizRender",graph);     
     }
 
     public async Task AppendError(string errorMessage) 
