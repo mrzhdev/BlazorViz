@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
@@ -10,19 +10,24 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />    
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
     
-    <ProjectReference Include="..\..\csly-cli\csly-cli-api\csly-cli-api.csproj" />
+<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-api\csly-cli-api.csproj" />-->
+<!--    -->
+<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-builder\csly-cli-builder.csproj" />-->
+<!--    -->
+<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-model\csly-cli-model.csproj" />-->
+<!--    -->
+<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-parser\csly-cli-parser.csproj" />-->
+<!--    <ProjectReference Include="..\..\csly\src\sly\sly.csproj" />-->
     
-    <ProjectReference Include="..\..\csly-cli\csly-cli-builder\csly-cli-builder.csproj" />
     
-    <ProjectReference Include="..\..\csly-cli\csly-cli-model\csly-cli-model.csproj" />
-    
-    <ProjectReference Include="..\..\csly-cli\csly-cli-parser\csly-cli-parser.csproj" />
-    <ProjectReference Include="..\..\csly\src\sly\sly.csproj" />
 
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2"/>
     <PackageReference Include="System.Collections.Immutable" Version="8.0.0"/>
     <PackageReference Include="System.Memory" Version="4.5.5"/>
     <PackageReference Include="System.ValueTuple" Version="4.5.0"/>
+    
+    <PackageReference Include="csly-cli-api" Version="1.0.3"/>
+    <PackageReference Include="sly" Version="3.1.4"/>
   </ItemGroup>
 
   <ItemGroup>
