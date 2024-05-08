@@ -13,16 +13,16 @@ jobs:
     # uses GitHub's checkout action to checkout code form the master branch
     - uses: actions/checkout@v2
     
-    # sets up .NET Core SDK 6.0
+    # sets up .NET Core SDK 7.0
     - name: Setup .NET Core SDK
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '6.0.400-preview.22330.6'
+        dotnet-version: '7.0'
         include-prerelease: true
 
     # publishes Blazor project to the release-folder
     - name: Publish .NET Core Project
-      run: dotnet publish BlazorVizView/BlazorVizView.csproj -c Release -o release --nologo
+      run: dotnet publish BlazorVizView/BlazorVizView.csproj -c Release -o release 
     
     # changes the base-tag in index.html from '/' to 'BlazorViz' to match GitHub Pages repository subdirectory
     - name: Change base-tag in index.html from / to BlazorViz
