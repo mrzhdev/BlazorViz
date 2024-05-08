@@ -10,15 +10,18 @@
     <p class="para">svg-pan-zoom.js, pan/zoom for HTML SVG: <a href="https://github.com/ariutta/svg-pan-zoom" target="_blank">https://github.com/ariutta/svg-pan-zoom</a></p>
     <p class="para">Demo is visualization of C# Syntax, used Roslyn CSharpSyntaxWalker to generate Graphviz DOT language file </p>
     <p class="title">Expression to process: </p>
-    <div class="input">
-        <textarea id="inputBox" maxlength="2000" spellcheck="false" @bind="expression" />
+    <div>
+        <div class="input" style="display: flex; flex-direction: row;flex-wrap: nowrap">
+            <textarea style="flex-grow: 1" id="grammarBox" maxlength="2000" spellcheck="false" @bind="grammar" />
+            <textarea style="flex-grow: 1" id="inputBox" maxlength="2000" spellcheck="false" @bind="expression" />
+        </div>
         <button id="submitButton" @onclick="Render">
             Render
         </button>
     </div>
     
 
-    <div id="graph">
+    <div id="graph" >
         <div id="output">
             <div id="error"></div>
           </div>
@@ -37,40 +40,104 @@
     private string grammar;
 
     private string dot;
+
     protected override async void OnInitialized()
     {
-        expression = "-58 * 2 /9 +(2 +2!) ";
+        expression = @"
+
+WHILE i < 10 DO
+(
+   i = i + 1
+   print ""hello""
+)";
 
         grammar = @"
-genericLexer SimpleExpressionToken;
+genericLexer WhileLexer;
 
-[Double] DOUBLE;
+[String] STRING;
 [Int] INT;
+[AlphaId] ID; 
+
+
+[ KeyWord] IF:""if"";
+[ KeyWord] THEN:""then"";
+[ KeyWord] ELSE:""else"";
+[ KeyWord] WHILE:""while"";
+[ KeyWord] DO:""do"";
+[ KeyWord] SKIP:""skip"";
+[ KeyWord] TRUE:""true"";
+[ KeyWord] FALSE:""false"";
+[ KeyWord] NOT:""not"";
+[ KeyWord] AND:""and"";
+[ KeyWord] OR:""or"";
+[ KeyWord] PRINT:""print"";
+
+ [Sugar] GREATER : "">"";
+
+[Sugar] LESSER : ""<"";
+
+[Sugar] EQUALS : ""=="";
+
+[Sugar] DIFFERENT : ""!="";
+
+[Sugar] CONCAT : ""."";
+
+[Sugar] ASSIGN : "":="";
 
 [Sugar] PLUS : ""+"";
-[Sugar] INCREMENT : ""++"";
 [Sugar] MINUS : ""-"";
 [Sugar] TIMES : ""*"";
 [Sugar] DIVIDE : ""/"";
+
 [Sugar] LPAREN : ""("";
 [Sugar] RPAREN : "")"";
-[Sugar] FACTORIAL : ""!"";
-[AlphaNumId] ID;
+[Sugar] SEMICOLON : "";"";
 
-parser SimpleExpressionParser;
+parser WhileParser;
 
+
+[Right 50] LESSER;
+[Right 50] GREATER;
+[Right 50] EQUALS;
+[Right 50]DIFFERENT;
+
+[Right 10] CONCAT;
+       
 [Right 10] PLUS;
 [Left 10] MINUS;
 [Right 50] TIMES;
-[Left 50] DIVIDE;
+[Left 50]DIVIDE;
+
 [Prefix 100] MINUS;
-[Postfix 100] FACTORIAL;
-[Operand] operand : primary_value;
-primary_value : DOUBLE;
-primary_value : INT;
-primary_value : ID;
-primary_value : LPAREN SimpleExpressionParser_expressions RPAREN;
--> root : SimpleExpressionParser_expressions;
+
+[Right 10] OR;
+[Right 50] AND;
+[Prefix 100] NOT;
+
+
+-> statement :  LPAREN statement RPAREN ;
+
+
+statement : sequence;
+
+
+[Operand] operand : [INT | TRUE | FALSE | STRING | ID];
+[Operand] operand : LPAREN WhileParser_expressions RPAREN;
+
+sequence : statementPrim additionalStatements*;
+
+additionalStatements : SEMICOLON statementPrim;
+
+statementPrim: IF WhileParser_expressions THEN statement ELSE statement;
+
+statementPrim: WHILE WhileParser_expressions DO statement;
+
+statementPrim: ID ASSIGN WhileParser_expressions;
+
+statementPrim: SKIP;
+
+statementPrim: PRINT WhileParser_expressions;
+
 ";
 
     }
@@ -83,6 +150,13 @@ primary_value : LPAREN SimpleExpressionParser_expressions RPAREN;
         {
             dot = dotresult.Result;
             await VizRender(dot);
+        }
+        else
+        {
+            foreach (var error in dotresult.Errors)
+            {
+                AppendError(error);
+            }
         }
     }
 
