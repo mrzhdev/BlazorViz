@@ -24,8 +24,8 @@ jobs:
     - name: Publish .NET Core Project
       run: dotnet publish BlazorVizView/BlazorVizView.csproj -c Release -o release 
     
-    # changes the base-tag in index.html from '/' to 'BlazorViz' to match GitHub Pages repository subdirectory
-    - name: Change base-tag in index.html from / to BlazorViz
+    # changes the base-tag in index.html from '/' to 'BlazorCslyViz' to match GitHub Pages repository subdirectory
+    - name: Change base-tag in index.html from / to BlazorCslyViz
       run: sed -i 's/<base href="\/" \/>/<base href="\/BlazorCslyViz\/" \/>/g' release/wwwroot/index.html
     
     # copy index.html to 404.html to serve the same file when a file is not found
