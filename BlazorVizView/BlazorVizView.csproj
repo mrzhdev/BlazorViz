@@ -28,6 +28,7 @@
     
     <PackageReference Include="csly-cli-api" Version="1.0.3"/>
     <PackageReference Include="sly" Version="3.1.5"/>
+      <PackageReference Include="BlazorMonaco" Version="3.2.0"/>
   </ItemGroup>
 
   <ItemGroup>
