@@ -10,8 +10,10 @@
     
     <div>
         <div class="input" style="display: flex; flex-direction: row;flex-wrap: nowrap">
-            <textarea style="flex-grow: 1" id="grammarBox" maxlength="2000" spellcheck="false" @bind="grammar" />
-            <textarea style="flex-grow: 1" id="inputBox" maxlength="2000" spellcheck="false" @bind="expression" />
+            @* <textarea style="flex-grow: 1" id="grammarBox" maxlength="2000" spellcheck="false" @bind="grammar" /> *@
+            <StandaloneCodeEditor Id="grammarBox" ConstructionOptions="GrammarConstructionOptions" />
+            @* <textarea style="flex-grow: 1" id="inputBox" maxlength="2000" spellcheck="false" @bind="expression" /> *@
+            <StandaloneCodeEditor Id="inputBox" ConstructionOptions="InputConstructionOptions"/>
         </div>
         <button id="submitButton" @onclick="Render">
             Render
@@ -24,7 +26,7 @@
             <div id="error"></div>
           </div>
     </div>
-
+q
 </div>
 
 @code {
@@ -141,6 +143,24 @@ statementPrim: PRINT WhileParser_expressions;
     }
 
 
+    private StandaloneEditorConstructionOptions GrammarConstructionOptions(StandaloneCodeEditor editor)
+    {
+        return new StandaloneEditorConstructionOptions
+        {
+            AutomaticLayout = true,
+            Value = grammar
+        };
+    }
+    
+    private StandaloneEditorConstructionOptions InputConstructionOptions(StandaloneCodeEditor editor)
+    {
+        return new StandaloneEditorConstructionOptions
+        {
+            AutomaticLayout = true,
+            Value = expression
+        };
+    }
+    
     private async void Render()
     {
         var dotresult = CslyProcessor.GetDot(grammar, expression);
