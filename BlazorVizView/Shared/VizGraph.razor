@@ -11,9 +11,9 @@
     <div>
         <div class="input" style="display: flex; flex-direction: row;flex-wrap: nowrap">
             @* <textarea style="flex-grow: 1" id="grammarBox" maxlength="2000" spellcheck="false" @bind="grammar" /> *@
-            <StandaloneCodeEditor Id="grammarBox" ConstructionOptions="GrammarConstructionOptions" />
-            @* <textarea style="flex-grow: 1" id="inputBox" maxlength="2000" spellcheck="false" @bind="expression" /> *@
-            <StandaloneCodeEditor Id="inputBox" ConstructionOptions="InputConstructionOptions"/>
+            <StandaloneCodeEditor @ref="_grammar" Id="grammarBox" ConstructionOptions="GrammarConstructionOptions" />
+            @* <textarea style="flex-grow: 1" i d="inputBox" maxlength="2000" spellcheck="false" @bind="expression" /> *@
+            <StandaloneCodeEditor @ref="_source" Id="inputBox" ConstructionOptions="InputConstructionOptions" />
         </div>
         <button id="submitButton" @onclick="Render">
             Render
@@ -26,7 +26,6 @@
             <div id="error"></div>
           </div>
     </div>
-q
 </div>
 
 @code {
@@ -35,15 +34,7 @@ q
     [Parameter]
     public string? Title { get; set; }
 
-    private string expression;
-
-    private string grammar;
-
-    private string dot;
-
-    protected override async void OnInitialized()
-    {
-        expression = @"
+    string source = @"
 
 WHILE i < 10 DO
 (
@@ -51,7 +42,7 @@ WHILE i < 10 DO
    print ""hello""
 )";
 
-        grammar = @"
+    string grammar = @"
 genericLexer WhileLexer;
 
 [String] STRING;
@@ -140,11 +131,18 @@ statementPrim: PRINT WhileParser_expressions;
 
 ";
 
+    private string dot;
+
+    protected override async void OnInitialized()
+    {
     }
 
+private StandaloneCodeEditor _grammar;
+private StandaloneCodeEditor _source;
 
     private StandaloneEditorConstructionOptions GrammarConstructionOptions(StandaloneCodeEditor editor)
     {
+        
         return new StandaloneEditorConstructionOptions
         {
             AutomaticLayout = true,
@@ -157,13 +155,17 @@ statementPrim: PRINT WhileParser_expressions;
         return new StandaloneEditorConstructionOptions
         {
             AutomaticLayout = true,
-            Value = expression
+            Value = source
         };
     }
     
     private async void Render()
     {
-        var dotresult = CslyProcessor.GetDot(grammar, expression);
+
+        grammar = await _grammar.GetValue();
+        source = await _source.GetValue();
+        
+        var dotresult = CslyProcessor.GetDot(grammar, source);
         if (dotresult.IsOK)
         {
             dot = dotresult.Result;
