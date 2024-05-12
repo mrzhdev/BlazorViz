@@ -43,6 +43,7 @@ WHILE i < 10 DO
 )";
 
     string grammar = @"
+
 genericLexer WhileLexer;
 
 [String] STRING;
@@ -115,19 +116,19 @@ statement : sequence;
 [Operand] operand : [INT | TRUE | FALSE | STRING | ID];
 [Operand] operand : LPAREN WhileParser_expressions RPAREN;
 
-sequence : statementPrim additionalStatements*;
+sequence : [statementIf | statementWhile | statementAssign | statementSkip | statementPrint] additionalStatements*;
 
-additionalStatements : SEMICOLON statementPrim;
+additionalStatements : SEMICOLON [statementIf | statementWhile | statementAssign | statementSkip | statementPrint];
 
-statementPrim: IF WhileParser_expressions THEN statement ELSE statement;
+statementIf: IF WhileParser_expressions THEN statement ELSE statement;
 
-statementPrim: WHILE WhileParser_expressions DO statement;
+statementWhile: WHILE WhileParser_expressions DO statement;
 
-statementPrim: ID ASSIGN WhileParser_expressions;
+statementAssign: ID ASSIGN WhileParser_expressions;
 
-statementPrim: SKIP;
+statementSkip: SKIP;
 
-statementPrim: PRINT WhileParser_expressions;
+statementPrint: PRINT WhileParser_expressions;
 
 ";
 
