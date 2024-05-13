@@ -9,11 +9,21 @@
    
     
     <div>
+
+        <label for="grammarFile" class="input-label">Importer un fichier grammaire</label>
+        <InputFile id="grammarFile" OnChange="LoadGrammar"/>
+        <label for="inputFile" class="input-label">Importer un fichier source</label>
+        <InputFile id="inputFile" OnChange="LoadGrammar"/>
         <div class="input" style="display: flex; flex-direction: row">
-            @* <textarea style="flex-grow: 1" id="grammarBox" maxlength="2000" spellcheck="false" @bind="grammar" /> *@
-            <StandaloneCodeEditor @ref="_grammar" Id="grammarBox" ConstructionOptions="GrammarConstructionOptions" />
-            @* <textarea style="flex-grow: 1" i d="inputBox" maxlength="2000" spellcheck="false" @bind="expression" /> *@
-            <StandaloneCodeEditor @ref="_source" Id="inputBox" ConstructionOptions="InputConstructionOptions" />
+
+<div style="flex-grow:1">        
+            <textarea style="flex-grow: 1" id="grammarBox" maxlength="2000" spellcheck="false" @bind="grammar" />
+</div>
+
+<div style="flex-grow:1">                 
+            <textarea style="flex-grow: 1" i d="inputBox" maxlength="2000" spellcheck="false" @bind="source" />
+</div>
+            
         </div>
         <button id="submitButton" @onclick="Render">
             Render
@@ -138,33 +148,52 @@ statementPrint: PRINT WhileParser_expressions;
     {
     }
 
-private StandaloneCodeEditor _grammar;
-private StandaloneCodeEditor _source;
+// private StandaloneCodeEditor _grammar;
+// private StandaloneCodeEditor _source;
 
-    private StandaloneEditorConstructionOptions GrammarConstructionOptions(StandaloneCodeEditor editor)
+
+
+    private async Task LoadGrammar(InputFileChangeEventArgs e)
     {
         
-        return new StandaloneEditorConstructionOptions
-        {
-            AutomaticLayout = true,
-            Value = grammar
-        };
+        var content = 
+            await new StreamReader(e.File.OpenReadStream()).ReadToEndAsync();
+        grammar = content;
+        //_grammar.SetValue(grammar);
     }
     
-    private StandaloneEditorConstructionOptions InputConstructionOptions(StandaloneCodeEditor editor)
+    private async  Task LoadSource(InputFileChangeEventArgs e)
     {
-        return new StandaloneEditorConstructionOptions
-        {
-            AutomaticLayout = true,
-            Value = source
-        };
+        var content = 
+            await new StreamReader(e.File.OpenReadStream()).ReadToEndAsync();
+        source = content;
+        //_source.SetValue(source);
     }
+
+    // private StandaloneEditorConstructionOptions GrammarConstructionOptions(StandaloneCodeEditor editor)
+    // {
+    //     
+    //     return new StandaloneEditorConstructionOptions
+    //     {
+    //         AutomaticLayout = true,
+    //         Value = grammar
+    //     };
+    // }
+    
+    // private StandaloneEditorConstructionOptions InputConstructionOptions(StandaloneCodeEditor editor)
+    // {
+    //     return new StandaloneEditorConstructionOptions
+    //     {
+    //         AutomaticLayout = true,
+    //         Value = source
+    //     };
+    // }
     
     private async void Render()
     {
 
-        grammar = await _grammar.GetValue();
-        source = await _source.GetValue();
+        // grammar = await _grammar.GetValue();
+        // source = await _source.GetValue();
         
         var dotresult = CslyProcessor.GetDot(grammar, source);
         if (dotresult.IsOK)
