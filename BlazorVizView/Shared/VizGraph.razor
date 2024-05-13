@@ -15,12 +15,15 @@
         <label for="inputFile" class="input-label">Importer un fichier source</label>
         <InputFile id="inputFile" OnChange="LoadGrammar"/>
         <div class="input" style="display: flex; flex-direction: row">
-            
+
+<div style="flex-grow:1">        
             <textarea style="flex-grow: 1" id="grammarBox" maxlength="2000" spellcheck="false" @bind="grammar" />
-            @* <StandaloneCodeEditor @ref="_grammar" Id="grammarBox" ConstructionOptions="GrammarConstructionOptions"/> *@
-            
+</div>
+
+<div style="flex-grow:1">                 
             <textarea style="flex-grow: 1" i d="inputBox" maxlength="2000" spellcheck="false" @bind="source" />
-            @* <StandaloneCodeEditor @ref="_source" Id="inputBox" ConstructionOptions="InputConstructionOptions"/> *@
+</div>
+            
         </div>
         <button id="submitButton" @onclick="Render">
             Render
