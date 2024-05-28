@@ -4,14 +4,14 @@ public class GenerateDialogResult
 {
     public string NameSpace { get; set; }
     
-    public string Outputtype { get; set; }
+    public string OutputType { get; set; }
     
     public bool Ok { get; set; }
 
-    public GenerateDialogResult(string ns, string outputtype)
+    public GenerateDialogResult(string ns, string outputType)
     {
         NameSpace = ns;
-        Outputtype = outputtype;
+        OutputType = outputType;
         Ok = true;
     }
 

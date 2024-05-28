@@ -1,6 +1,9 @@
-﻿@inject IJSRuntime JSRuntime
+﻿@using System.IO.Compression
+@using System.Text
+@inject IJSRuntime JSRuntime
 @inject NavigationManager NavManager
 @inject IBlazorDialogService dialogService
+@inject IJSUnmarshalledRuntime JSUnmarshalledRuntime
 
 
 <div>
@@ -184,7 +187,63 @@ statementPrint: PRINT WhileParser_expressions;
         });
         if (dialogResult != null && dialogResult.Ok)
         {
-            Console.WriteLine($"Generate => ns:{dialogResult.NameSpace}, type:{dialogResult.Outputtype}");
+            Console.WriteLine($"Generate => ns:{dialogResult.NameSpace}, type:{dialogResult.OutputType}");
+            var sources = CslyProcessor.GenerateParser(grammar, dialogResult.NameSpace, dialogResult.OutputType);
+            if (sources.IsOK)
+            {
+                byte[] compressedBytes;
+                using (var outStream = new MemoryStream())
+                {
+                    using (var archive = new ZipArchive(outStream, ZipArchiveMode.Create, true))
+                    {
+                        var fileInArchive = archive.CreateEntry(sources.Result.ParserName+".cs", CompressionLevel.Fastest);
+                        using (var entryStream = fileInArchive.Open())
+                        {
+                            using (var fileToCompressStream = new MemoryStream(Encoding.UTF8.GetBytes(sources.Result.Parser)))
+                            {
+                                fileToCompressStream.CopyTo(entryStream);
+                            }
+                        }
+
+                        fileInArchive = archive.CreateEntry(sources.Result.LexerName+".cs", CompressionLevel.Fastest);
+                        using (var entryStream = fileInArchive.Open())
+                        {
+                            using (var fileToCompressStream = new MemoryStream(Encoding.UTF8.GetBytes(sources.Result.Lexer)))
+                            {
+                                fileToCompressStream.CopyTo(entryStream);
+                            }
+                        }
+                    }
+
+                    compressedBytes = outStream.ToArray();
+                }
+
+
+
+               
+
+                string fileName = "parser.zip";
+                string contentType = "application/zip";
+
+                // Check if the IJSRuntime is the WebAssembly implementation of the JSRuntime
+                if (JSUnmarshalledRuntime is IJSUnmarshalledRuntime webAssemblyJSRuntime)
+                {
+                    webAssemblyJSRuntime.InvokeUnmarshalled<string, string, byte[], bool>("BlazorDownloadFileFast", fileName, contentType, compressedBytes);
+                    return;
+                }
+
+                // Fall back to the slow method if not in WebAssembly
+                await JSRuntime.InvokeVoidAsync("BlazorDownloadFile", fileName, contentType, compressedBytes);
+
+            }
+            else
+            {
+                foreach (var error in sources.Errors)
+                {
+                    Console.WriteLine(error);
+                    await AppendError(error);
+                }
+            }
         }
         else
         {
@@ -193,10 +252,6 @@ statementPrint: PRINT WhileParser_expressions;
     }
     private async void Render()
     {
-
-        // grammar = await _grammar.GetValue();
-        // source = await _source.GetValue();
-        
         var dotresult = CslyProcessor.GetDot(grammar, source);
         if (dotresult.IsOK)
         {
