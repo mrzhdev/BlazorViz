@@ -52,47 +52,14 @@
     [Parameter]
     public string? Title { get; set; }
 
-    string source = @"
-
-while i < 10 do
-(
-   i := i + 1;
-   print ""hello""
-)";
+    string source = @"1 / 2 / 3 + 4 + 3.14";
 
     string grammar = @"
+genericLexer ExprLexer;
 
-genericLexer WhileLexer;
+[Int] I;
+[Double] D;
 
-[String] STRING;
-[Int] INT;
-[AlphaId] ID; 
-
-
-[ KeyWord] IF:""if"";
-[ KeyWord] THEN:""then"";
-[ KeyWord] ELSE:""else"";
-[ KeyWord] WHILE:""while"";
-[ KeyWord] DO:""do"";
-[ KeyWord] SKIP:""skip"";
-[ KeyWord] TRUE:""true"";
-[ KeyWord] FALSE:""false"";
-[ KeyWord] NOT:""not"";
-[ KeyWord] AND:""and"";
-[ KeyWord] OR:""or"";
-[ KeyWord] PRINT:""print"";
-
- [Sugar] GREATER : "">"";
-
-[Sugar] LESSER : ""<"";
-
-[Sugar] EQUALS : ""=="";
-
-[Sugar] DIFFERENT : ""!="";
-
-[Sugar] CONCAT : ""."";
-
-[Sugar] ASSIGN : "":="";
 
 [Sugar] PLUS : ""+"";
 [Sugar] MINUS : ""-"";
@@ -101,52 +68,23 @@ genericLexer WhileLexer;
 
 [Sugar] LPAREN : ""("";
 [Sugar] RPAREN : "")"";
-[Sugar] SEMICOLON : "";"";
-
-parser WhileParser;
 
 
-[Right 50] LESSER;
-[Right 50] GREATER;
-[Right 50] EQUALS;
-[Right 50]DIFFERENT;
+parser ExprParser;
 
-[Right 10] CONCAT;
+
+-> root:  ExprParser_expressions ;
+
+
        
 [Right 10] PLUS;
 [Left 10] MINUS;
 [Right 50] TIMES;
 [Left 50]DIVIDE;
-
 [Prefix 100] MINUS;
 
-[Right 10] OR;
-[Right 50] AND;
-[Prefix 100] NOT;
-
-
--> statement :  LPAREN statement RPAREN ;
-
-
-statement : sequence;
-
-
-[Operand] operand : [INT | TRUE | FALSE | STRING | ID];
-[Operand] operand : LPAREN WhileParser_expressions RPAREN;
-
-sequence : [statementIf | statementWhile | statementAssign | statementSkip | statementPrint] additionalStatements*;
-
-additionalStatements : SEMICOLON [statementIf | statementWhile | statementAssign | statementSkip | statementPrint];
-
-statementIf: IF WhileParser_expressions THEN statement ELSE statement;
-
-statementWhile: WHILE WhileParser_expressions DO statement;
-
-statementAssign: ID ASSIGN WhileParser_expressions;
-
-statementSkip: SKIP;
-
-statementPrint: PRINT WhileParser_expressions;
+[Operand] operand : [I|D];
+[Operand] operand : LPAREN ExprParser_expressions RPAREN;
 
 ";
 
