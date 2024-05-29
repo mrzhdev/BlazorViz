@@ -10,17 +10,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.0" />    
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.0" PrivateAssets="all" />
-    
-<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-api\csly-cli-api.csproj" />-->
-<!--    -->
-<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-builder\csly-cli-builder.csproj" />-->
-<!--    -->
-<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-model\csly-cli-model.csproj" />-->
-<!--    -->
-<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-parser\csly-cli-parser.csproj" />-->
-<!--    <ProjectReference Include="..\..\csly\src\sly\sly.csproj" />-->
-    
-    
+
+    <PackageReference Include="sly" Version="3.1.6"/>
+    <PackageReference Include="csly-cli-api" Version="1.1.9"/>
 
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2"/>
     <PackageReference Include="System.Collections.Immutable" Version="8.0.0"/>
@@ -28,8 +20,8 @@
     <PackageReference Include="System.ValueTuple" Version="4.5.0"/>
     <PackageReference Include="BlazorDialog" Version="2.3.0"/>
     
-    <PackageReference Include="csly-cli-api" Version="1.1.6"/>
-    <PackageReference Include="sly" Version="3.1.5"/>
+
+
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0-4.final" />
     
   </ItemGroup>
