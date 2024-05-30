@@ -40,6 +40,9 @@
         <button id="submitButton" @onclick="GetJson">
             Download JSON...
         </button>
+        <button id="extractButton" @onclick="ExtractGrammar">
+            Extract grammar...
+        </button>
     </div>
     
 
@@ -132,6 +135,30 @@ parser ExprParser;
             await JSRuntime.InvokeVoidAsync("BlazorDownloadFile", fileName, contentType, UTF8Encoding.UTF8.GetBytes(json.Result));
         }
     }
+
+
+    private async void ExtractGrammar()
+    {
+        bool isCentered = true;
+        DialogSize size;
+        DialogAnimation animation = DialogAnimation.SlideDown;
+
+        var dialogResult = await dialogService.ShowComponentAsDialog<ExtractDialogResult>(new ComponentAsDialogOptions(typeof(ExtractDialog))
+        {
+            Animation = DialogAnimation.SlideDown,
+            Size = DialogSize.Normal,
+            Centered = true,
+            Parameters = new()
+        });
+        if (dialogResult != null && dialogResult.Ok)
+        {
+            var extractedGrammar = CslyProcessor.ExtractGrammar(dialogResult.Parser, dialogResult.Lexer);
+            if (extractedGrammar.IsOK && !string.IsNullOrEmpty(extractedGrammar.Result))
+            {
+                this.grammar = extractedGrammar.Result;
+            }
+        }
+    } 
     
     private async void Generate()
     {
@@ -139,7 +166,7 @@ parser ExprParser;
         DialogSize size;
         DialogAnimation animation = DialogAnimation.SlideDown;
 
-        var dialogResult = await dialogService.ShowComponentAsDialog<GenerateDialogResult>(new ComponentAsDialogOptions(typeof(GeneateDialog))
+        var dialogResult = await dialogService.ShowComponentAsDialog<GenerateDialogResult>(new ComponentAsDialogOptions(typeof(GenerateDialog))
         {
             Animation = DialogAnimation.SlideDown,
             Size = DialogSize.Normal,

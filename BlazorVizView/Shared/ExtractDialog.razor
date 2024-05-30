@@ -1,0 +1,43 @@
+<DialogHeader ShowClose="true">
+    <h4>Grammar extraction</h4>
+</DialogHeader>
+<DialogBody>
+
+    <label for="lexerFile" class="input-label">Lexer</label>
+    <InputFile id="lexerFile" OnChange="LoadLexer"/>
+    <br/>
+    <label for="parserFile" class="input-label">Parser</label>
+    <InputFile id="parserFile" OnChange="LoadParser"/>
+    
+    
+</DialogBody>
+<DialogFooter>
+    <button type="button" class="btn btn-primary" @onclick="@(()=> Dialog.Hide(new ExtractDialogResult(lexer, parser)))">Yes</button>
+    <button type="button" class="btn btn-secondary" @onclick="@(()=> Dialog.Hide(new ExtractDialogResult()))">No</button>
+</DialogFooter>
+
+@code {
+
+    private string parser = "";
+
+    private string lexer = "";
+    
+    [CascadingParameter(Name = "ParentDialog")] Dialog Dialog { get; set; }
+    
+    private async Task LoadParser(InputFileChangeEventArgs e)
+    {
+        
+        var content = 
+            await new StreamReader(e.File.OpenReadStream()).ReadToEndAsync();
+        parser = content;
+    }
+    
+    private async Task LoadLexer(InputFileChangeEventArgs e)
+    {
+        
+        var content = 
+            await new StreamReader(e.File.OpenReadStream()).ReadToEndAsync();
+        lexer = content;
+    }
+    
+}
