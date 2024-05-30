@@ -9,11 +9,9 @@
 <div>
     <strong>@Title</strong>
 
-    <p class="title">Visualization  for CSLY with Viz.js </p>
+    <p class="title">Visualization for CSLY with Viz.js </p>
 
 
-   
-    
     <div>
 
         <label for="grammarFile" class="input-label">Importer un fichier grammaire</label>
@@ -22,14 +20,14 @@
         <InputFile id="inputFile" OnChange="LoadGrammar"/>
         <div class="input" style="display: flex; flex-direction: row">
 
-<div style="flex-grow:1">        
-            <textarea style="flex-grow: 1" id="grammarBox" maxlength="2000" spellcheck="false" @bind="grammar" />
-</div>
+            <div style="flex-grow:1">
+                <textarea style="flex-grow: 1" id="grammarBox" maxlength="2000" spellcheck="false" @bind="grammar" />
+            </div>
 
-<div style="flex-grow:1">                 
-            <textarea style="flex-grow: 1" i d="inputBox" maxlength="2000" spellcheck="false" @bind="source" />
-</div>
-            
+            <div style="flex-grow:1">
+                <textarea style="flex-grow: 1" i d="inputBox" maxlength="2000" spellcheck="false" @bind="source" />
+            </div>
+
         </div>
         <button id="submitButton" @onclick="Render">
             Render
@@ -44,19 +42,18 @@
             Extract grammar...
         </button>
     </div>
-    
 
-    <div id="graph" >
+
+    <div id="graph">
         <div id="output">
             <div id="error"></div>
-          </div>
+        </div>
     </div>
 </div>
 
 @code {
 
-    [Parameter]
-    public string? Title { get; set; }
+    [Parameter] public string? Title { get; set; }
 
     string source = @"1 / 2 / 3 + 4 + 3.14";
 
@@ -102,17 +99,18 @@ parser ExprParser;
 
     private async Task LoadGrammar(InputFileChangeEventArgs e)
     {
-        
-        var content = 
+        var content =
             await new StreamReader(e.File.OpenReadStream()).ReadToEndAsync();
         grammar = content;
+        StateHasChanged();
     }
-    
-    private async  Task LoadSource(InputFileChangeEventArgs e)
+
+    private async Task LoadSource(InputFileChangeEventArgs e)
     {
-        var content = 
+        var content =
             await new StreamReader(e.File.OpenReadStream()).ReadToEndAsync();
         source = content;
+        StateHasChanged();
     }
 
 
@@ -156,10 +154,11 @@ parser ExprParser;
             if (extractedGrammar.IsOK && !string.IsNullOrEmpty(extractedGrammar.Result))
             {
                 this.grammar = extractedGrammar.Result;
+                StateHasChanged();
             }
         }
-    } 
-    
+    }
+
     private async void Generate()
     {
         bool isCentered = true;
@@ -184,7 +183,7 @@ parser ExprParser;
                 {
                     using (var archive = new ZipArchive(outStream, ZipArchiveMode.Create, true))
                     {
-                        var fileInArchive = archive.CreateEntry(sources.Result.ParserName+".cs", CompressionLevel.Fastest);
+                        var fileInArchive = archive.CreateEntry(sources.Result.ParserName + ".cs", CompressionLevel.Fastest);
                         using (var entryStream = fileInArchive.Open())
                         {
                             using (var fileToCompressStream = new MemoryStream(Encoding.UTF8.GetBytes(sources.Result.Parser)))
@@ -193,7 +192,7 @@ parser ExprParser;
                             }
                         }
 
-                        fileInArchive = archive.CreateEntry(sources.Result.LexerName+".cs", CompressionLevel.Fastest);
+                        fileInArchive = archive.CreateEntry(sources.Result.LexerName + ".cs", CompressionLevel.Fastest);
                         using (var entryStream = fileInArchive.Open())
                         {
                             using (var fileToCompressStream = new MemoryStream(Encoding.UTF8.GetBytes(sources.Result.Lexer)))
@@ -201,8 +200,8 @@ parser ExprParser;
                                 fileToCompressStream.CopyTo(entryStream);
                             }
                         }
-                        
-                        fileInArchive = archive.CreateEntry(sources.Result.ParserName+".csproj", CompressionLevel.Fastest);
+
+                        fileInArchive = archive.CreateEntry(sources.Result.ParserName + ".csproj", CompressionLevel.Fastest);
                         using (var entryStream = fileInArchive.Open())
                         {
                             using (var fileToCompressStream = new MemoryStream(Encoding.UTF8.GetBytes(sources.Result.Project)))
@@ -216,9 +215,6 @@ parser ExprParser;
                 }
 
 
-
-               
-
                 string fileName = "parser.zip";
                 string contentType = "application/zip";
 
@@ -231,7 +227,6 @@ parser ExprParser;
 
                 // Fall back to the slow method if not in WebAssembly
                 await JSRuntime.InvokeVoidAsync("BlazorDownloadFile", fileName, contentType, compressedBytes);
-
             }
             else
             {
@@ -247,6 +242,7 @@ parser ExprParser;
             Console.WriteLine("do not generate");
         }
     }
+
     private async void Render()
     {
         var dotresult = CslyProcessor.GetDot(grammar, source);
@@ -264,13 +260,14 @@ parser ExprParser;
         }
     }
 
-    public async Task VizRender(string graph) 
+    public async Task VizRender(string graph)
     {
-        await JSRuntime.InvokeAsync<string>("vizRender",graph);     
+        await JSRuntime.InvokeAsync<string>("vizRender", graph);
     }
 
-    public async Task AppendError(string errorMessage) 
+    public async Task AppendError(string errorMessage)
     {
-        await JSRuntime.InvokeAsync<string>("appendError", errorMessage);     
+        await JSRuntime.InvokeAsync<string>("appendError", errorMessage);
     }
+
 }
