@@ -37,6 +37,9 @@
         <button id="submitButton" @onclick="Generate">
             Generate...
         </button>
+        <button id="submitButton" @onclick="GetJson">
+            Download JSON...
+        </button>
     </div>
     
 
@@ -109,6 +112,26 @@ parser ExprParser;
         source = content;
     }
 
+
+    private async void GetJson()
+    {
+        var json = CslyProcessor.GetJson(grammar, source);
+        if (json.IsOK)
+        {
+            string fileName = "source.json";
+            string contentType = "text/json";
+
+            // Check if the IJSRuntime is the WebAssembly implementation of the JSRuntime
+            if (JSUnmarshalledRuntime is IJSUnmarshalledRuntime webAssemblyJSRuntime)
+            {
+                webAssemblyJSRuntime.InvokeUnmarshalled<string, string, byte[], bool>("BlazorDownloadFileFast", fileName, contentType, UTF8Encoding.UTF8.GetBytes(json.Result));
+                return;
+            }
+
+            // Fall back to the slow method if not in WebAssembly
+            await JSRuntime.InvokeVoidAsync("BlazorDownloadFile", fileName, contentType, UTF8Encoding.UTF8.GetBytes(json.Result));
+        }
+    }
     
     private async void Generate()
     {
@@ -147,6 +170,15 @@ parser ExprParser;
                         using (var entryStream = fileInArchive.Open())
                         {
                             using (var fileToCompressStream = new MemoryStream(Encoding.UTF8.GetBytes(sources.Result.Lexer)))
+                            {
+                                fileToCompressStream.CopyTo(entryStream);
+                            }
+                        }
+                        
+                        fileInArchive = archive.CreateEntry(sources.Result.ParserName+".csproj", CompressionLevel.Fastest);
+                        using (var entryStream = fileInArchive.Open())
+                        {
+                            using (var fileToCompressStream = new MemoryStream(Encoding.UTF8.GetBytes(sources.Result.Project)))
                             {
                                 fileToCompressStream.CopyTo(entryStream);
                             }

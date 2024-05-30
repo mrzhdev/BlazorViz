@@ -12,7 +12,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.0" PrivateAssets="all" />
 
     <PackageReference Include="sly" Version="3.1.6"/>
-    <PackageReference Include="csly-cli-api" Version="1.1.9"/>
+    <PackageReference Include="csly-cli-api" Version="1.2.3"/>
 
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2"/>
     <PackageReference Include="System.Collections.Immutable" Version="8.0.0"/>
