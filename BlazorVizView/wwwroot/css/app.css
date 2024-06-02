@@ -42,6 +42,13 @@ a, .btn-link {
     margin-bottom: 10px;
     font-family: Consolas, 'Courier New', monospace;
 }
+#grammarBox {
+    width: 100%;
+    height: 150px;
+    text-wrap: normal;
+    margin-bottom: 10px;
+    font-family: Consolas, 'Courier New', monospace;
+}
 
 #submitButton {
     margin-bottom: 10px;
