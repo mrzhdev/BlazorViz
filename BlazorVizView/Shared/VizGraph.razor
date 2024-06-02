@@ -1,13 +1,17 @@
-﻿@inject IJSRuntime JSRuntime
+﻿@using System.IO.Compression
+@using System.Text
+@inject IJSRuntime JSRuntime
 @inject NavigationManager NavManager
-@using Microsoft.JSInterop
+@inject IBlazorDialogService dialogService
+@inject IJSUnmarshalledRuntime JSUnmarshalledRuntime
+
 
 <div>
     <strong>@Title</strong>
 
-    <p class="title">Visualization  for CSLY with Viz.js </p>
-   
-    
+    <p class="title">Visualization for CSLY with Viz.js </p>
+
+
     <div>
 
         <label for="grammarFile" class="input-label">Importer un fichier grammaire</label>
@@ -16,75 +20,49 @@
         <InputFile id="inputFile" OnChange="LoadGrammar"/>
         <div class="input" style="display: flex; flex-direction: row">
 
-<div style="flex-grow:1">        
-            <textarea style="flex-grow: 1" id="grammarBox" maxlength="2000" spellcheck="false" @bind="grammar" />
-</div>
+            <div style="flex-grow:1">
+                <textarea style="flex-grow: 1" id="grammarBox" maxlength="2000" spellcheck="false" @bind="grammar" />
+            </div>
 
-<div style="flex-grow:1">                 
-            <textarea style="flex-grow: 1" i d="inputBox" maxlength="2000" spellcheck="false" @bind="source" />
-</div>
-            
+            <div style="flex-grow:1">
+                <textarea style="flex-grow: 1" i d="inputBox" maxlength="2000" spellcheck="false" @bind="source" />
+            </div>
+
         </div>
         <button id="submitButton" @onclick="Render">
             Render
         </button>
+        <button id="submitButton" @onclick="Generate">
+            Generate...
+        </button>
+        <button id="submitButton" @onclick="GetJson">
+            Download JSON...
+        </button>
+        <button id="extractButton" @onclick="ExtractGrammar">
+            Extract grammar...
+        </button>
     </div>
-    
 
-    <div id="graph" >
+
+    <div id="graph">
         <div id="output">
             <div id="error"></div>
-          </div>
+        </div>
     </div>
 </div>
 
 @code {
 
-    // Demonstrates how a parent component can supply parameters
-    [Parameter]
-    public string? Title { get; set; }
+    [Parameter] public string? Title { get; set; }
 
-    string source = @"
-
-while i < 10 do
-(
-   i := i + 1;
-   print ""hello""
-)";
+    string source = @"1 / 2 / 3 + 4 + 3.14";
 
     string grammar = @"
+genericLexer ExprLexer;
 
-genericLexer WhileLexer;
+[Int] I;
+[Double] D;
 
-[String] STRING;
-[Int] INT;
-[AlphaId] ID; 
-
-
-[ KeyWord] IF:""if"";
-[ KeyWord] THEN:""then"";
-[ KeyWord] ELSE:""else"";
-[ KeyWord] WHILE:""while"";
-[ KeyWord] DO:""do"";
-[ KeyWord] SKIP:""skip"";
-[ KeyWord] TRUE:""true"";
-[ KeyWord] FALSE:""false"";
-[ KeyWord] NOT:""not"";
-[ KeyWord] AND:""and"";
-[ KeyWord] OR:""or"";
-[ KeyWord] PRINT:""print"";
-
- [Sugar] GREATER : "">"";
-
-[Sugar] LESSER : ""<"";
-
-[Sugar] EQUALS : ""=="";
-
-[Sugar] DIFFERENT : ""!="";
-
-[Sugar] CONCAT : ""."";
-
-[Sugar] ASSIGN : "":="";
 
 [Sugar] PLUS : ""+"";
 [Sugar] MINUS : ""-"";
@@ -93,52 +71,23 @@ genericLexer WhileLexer;
 
 [Sugar] LPAREN : ""("";
 [Sugar] RPAREN : "")"";
-[Sugar] SEMICOLON : "";"";
-
-parser WhileParser;
 
 
-[Right 50] LESSER;
-[Right 50] GREATER;
-[Right 50] EQUALS;
-[Right 50]DIFFERENT;
+parser ExprParser;
 
-[Right 10] CONCAT;
+
+-> root:  ExprParser_expressions ;
+
+
        
 [Right 10] PLUS;
 [Left 10] MINUS;
 [Right 50] TIMES;
 [Left 50]DIVIDE;
-
 [Prefix 100] MINUS;
 
-[Right 10] OR;
-[Right 50] AND;
-[Prefix 100] NOT;
-
-
--> statement :  LPAREN statement RPAREN ;
-
-
-statement : sequence;
-
-
-[Operand] operand : [INT | TRUE | FALSE | STRING | ID];
-[Operand] operand : LPAREN WhileParser_expressions RPAREN;
-
-sequence : [statementIf | statementWhile | statementAssign | statementSkip | statementPrint] additionalStatements*;
-
-additionalStatements : SEMICOLON [statementIf | statementWhile | statementAssign | statementSkip | statementPrint];
-
-statementIf: IF WhileParser_expressions THEN statement ELSE statement;
-
-statementWhile: WHILE WhileParser_expressions DO statement;
-
-statementAssign: ID ASSIGN WhileParser_expressions;
-
-statementSkip: SKIP;
-
-statementPrint: PRINT WhileParser_expressions;
+[Operand] operand : [I|D];
+[Operand] operand : LPAREN ExprParser_expressions RPAREN;
 
 ";
 
@@ -148,53 +97,154 @@ statementPrint: PRINT WhileParser_expressions;
     {
     }
 
-// private StandaloneCodeEditor _grammar;
-// private StandaloneCodeEditor _source;
-
-
-
     private async Task LoadGrammar(InputFileChangeEventArgs e)
     {
-        
-        var content = 
+        var content =
             await new StreamReader(e.File.OpenReadStream()).ReadToEndAsync();
         grammar = content;
-        //_grammar.SetValue(grammar);
+        StateHasChanged();
     }
-    
-    private async  Task LoadSource(InputFileChangeEventArgs e)
+
+    private async Task LoadSource(InputFileChangeEventArgs e)
     {
-        var content = 
+        var content =
             await new StreamReader(e.File.OpenReadStream()).ReadToEndAsync();
         source = content;
-        //_source.SetValue(source);
+        StateHasChanged();
     }
 
-    // private StandaloneEditorConstructionOptions GrammarConstructionOptions(StandaloneCodeEditor editor)
-    // {
-    //     
-    //     return new StandaloneEditorConstructionOptions
-    //     {
-    //         AutomaticLayout = true,
-    //         Value = grammar
-    //     };
-    // }
-    
-    // private StandaloneEditorConstructionOptions InputConstructionOptions(StandaloneCodeEditor editor)
-    // {
-    //     return new StandaloneEditorConstructionOptions
-    //     {
-    //         AutomaticLayout = true,
-    //         Value = source
-    //     };
-    // }
-    
+
+    private async void GetJson()
+    {
+        var json = CslyProcessor.GetJson(grammar, source);
+        if (json.IsOK)
+        {
+            string fileName = "source.json";
+            string contentType = "text/json";
+
+            // Check if the IJSRuntime is the WebAssembly implementation of the JSRuntime
+            if (JSUnmarshalledRuntime is IJSUnmarshalledRuntime webAssemblyJSRuntime)
+            {
+                webAssemblyJSRuntime.InvokeUnmarshalled<string, string, byte[], bool>("BlazorDownloadFileFast", fileName, contentType, UTF8Encoding.UTF8.GetBytes(json.Result));
+                return;
+            }
+
+            // Fall back to the slow method if not in WebAssembly
+            await JSRuntime.InvokeVoidAsync("BlazorDownloadFile", fileName, contentType, UTF8Encoding.UTF8.GetBytes(json.Result));
+        }
+    }
+
+
+    private async void ExtractGrammar()
+    {
+        bool isCentered = true;
+        DialogSize size;
+        DialogAnimation animation = DialogAnimation.SlideDown;
+
+        var dialogResult = await dialogService.ShowComponentAsDialog<ExtractDialogResult>(new ComponentAsDialogOptions(typeof(ExtractDialog))
+        {
+            Animation = DialogAnimation.SlideDown,
+            Size = DialogSize.Normal,
+            Centered = true,
+            Parameters = new()
+        });
+        if (dialogResult != null && dialogResult.Ok)
+        {
+            var extractedGrammar = CslyProcessor.ExtractGrammar(dialogResult.Parser, dialogResult.Lexer);
+            if (extractedGrammar.IsOK && !string.IsNullOrEmpty(extractedGrammar.Result))
+            {
+                this.grammar = extractedGrammar.Result;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async void Generate()
+    {
+        bool isCentered = true;
+        DialogSize size;
+        DialogAnimation animation = DialogAnimation.SlideDown;
+
+        var dialogResult = await dialogService.ShowComponentAsDialog<GenerateDialogResult>(new ComponentAsDialogOptions(typeof(GenerateDialog))
+        {
+            Animation = DialogAnimation.SlideDown,
+            Size = DialogSize.Normal,
+            Centered = true,
+            Parameters = new()
+        });
+        if (dialogResult != null && dialogResult.Ok)
+        {
+            Console.WriteLine($"Generate => ns:{dialogResult.NameSpace}, type:{dialogResult.OutputType}");
+            var sources = CslyProcessor.GenerateParser(grammar, dialogResult.NameSpace, dialogResult.OutputType);
+            if (sources.IsOK)
+            {
+                byte[] compressedBytes;
+                using (var outStream = new MemoryStream())
+                {
+                    using (var archive = new ZipArchive(outStream, ZipArchiveMode.Create, true))
+                    {
+                        var fileInArchive = archive.CreateEntry(sources.Result.ParserName + ".cs", CompressionLevel.Fastest);
+                        using (var entryStream = fileInArchive.Open())
+                        {
+                            using (var fileToCompressStream = new MemoryStream(Encoding.UTF8.GetBytes(sources.Result.Parser)))
+                            {
+                                fileToCompressStream.CopyTo(entryStream);
+                            }
+                        }
+
+                        fileInArchive = archive.CreateEntry(sources.Result.LexerName + ".cs", CompressionLevel.Fastest);
+                        using (var entryStream = fileInArchive.Open())
+                        {
+                            using (var fileToCompressStream = new MemoryStream(Encoding.UTF8.GetBytes(sources.Result.Lexer)))
+                            {
+                                fileToCompressStream.CopyTo(entryStream);
+                            }
+                        }
+
+                        fileInArchive = archive.CreateEntry(sources.Result.ParserName + ".csproj", CompressionLevel.Fastest);
+                        using (var entryStream = fileInArchive.Open())
+                        {
+                            using (var fileToCompressStream = new MemoryStream(Encoding.UTF8.GetBytes(sources.Result.Project)))
+                            {
+                                fileToCompressStream.CopyTo(entryStream);
+                            }
+                        }
+                    }
+
+                    compressedBytes = outStream.ToArray();
+                }
+
+
+                string fileName = "parser.zip";
+                string contentType = "application/zip";
+
+                // Check if the IJSRuntime is the WebAssembly implementation of the JSRuntime
+                if (JSUnmarshalledRuntime is IJSUnmarshalledRuntime webAssemblyJSRuntime)
+                {
+                    webAssemblyJSRuntime.InvokeUnmarshalled<string, string, byte[], bool>("BlazorDownloadFileFast", fileName, contentType, compressedBytes);
+                    return;
+                }
+
+                // Fall back to the slow method if not in WebAssembly
+                await JSRuntime.InvokeVoidAsync("BlazorDownloadFile", fileName, contentType, compressedBytes);
+            }
+            else
+            {
+                foreach (var error in sources.Errors)
+                {
+                    Console.WriteLine(error);
+                    await AppendError(error);
+                }
+            }
+        }
+        else
+        {
+            Console.WriteLine("do not generate");
+        }
+    }
+
     private async void Render()
     {
-
-        // grammar = await _grammar.GetValue();
-        // source = await _source.GetValue();
-        
         var dotresult = CslyProcessor.GetDot(grammar, source);
         if (dotresult.IsOK)
         {
@@ -210,13 +260,14 @@ statementPrint: PRINT WhileParser_expressions;
         }
     }
 
-    public async Task VizRender(string graph) 
+    public async Task VizRender(string graph)
     {
-        await JSRuntime.InvokeAsync<string>("vizRender",graph);     
+        await JSRuntime.InvokeAsync<string>("vizRender", graph);
     }
 
-    public async Task AppendError(string errorMessage) 
+    public async Task AppendError(string errorMessage)
     {
-        await JSRuntime.InvokeAsync<string>("appendError", errorMessage);     
+        await JSRuntime.InvokeAsync<string>("appendError", errorMessage);
     }
+
 }

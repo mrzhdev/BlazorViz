@@ -4,35 +4,34 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.0" />    
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.0" PrivateAssets="all" />
-    
-<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-api\csly-cli-api.csproj" />-->
-<!--    -->
-<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-builder\csly-cli-builder.csproj" />-->
-<!--    -->
-<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-model\csly-cli-model.csproj" />-->
-<!--    -->
-<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-parser\csly-cli-parser.csproj" />-->
-<!--    <ProjectReference Include="..\..\csly\src\sly\sly.csproj" />-->
-    
-    
+
+    <PackageReference Include="sly" Version="3.1.6"/>
+    <PackageReference Include="csly-cli-api" Version="1.2.5"/>
 
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2"/>
     <PackageReference Include="System.Collections.Immutable" Version="8.0.0"/>
     <PackageReference Include="System.Memory" Version="4.5.5"/>
     <PackageReference Include="System.ValueTuple" Version="4.5.0"/>
+    <PackageReference Include="BlazorDialog" Version="2.3.0"/>
     
-    <PackageReference Include="csly-cli-api" Version="1.0.3"/>
-    <PackageReference Include="sly" Version="3.1.5"/>
-      <PackageReference Include="BlazorMonaco" Version="3.2.0"/>
+
+
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.4.0-4.final" />
+    
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\js\" />
   </ItemGroup>
+
+<!--  <ItemGroup>-->
+<!--    <ProjectReference Include="..\..\csly-cli\csly-cli-api\csly-cli-api.csproj" />-->
+<!--  </ItemGroup>-->
 
 </Project>

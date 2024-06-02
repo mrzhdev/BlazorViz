@@ -1,0 +1,24 @@
+<DialogHeader ShowClose="true">
+    <h4>Source generation options</h4>
+</DialogHeader>
+<DialogBody>
+    <label for="ns">NameSpace</label>
+    <input type="text" @bind="nameSpace"/>
+    <br/>
+    <label for="type">Parser output type</label>
+    <input type="text" id="type" @bind="outputType"/>
+</DialogBody>
+<DialogFooter>
+    <button type="button" class="btn btn-primary" @onclick="@(()=> Dialog.Hide(new GenerateDialogResult(nameSpace,outputType)))">Yes</button>
+    <button type="button" class="btn btn-secondary" @onclick="@(()=> Dialog.Hide(new GenerateDialogResult()))">No</button>
+</DialogFooter>
+
+@code {
+
+    private string nameSpace = "ns";
+
+    private string outputType = "object";
+    
+    [CascadingParameter(Name = "ParentDialog")] Dialog Dialog { get; set; }
+    
+}
