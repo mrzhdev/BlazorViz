@@ -1,41 +1,30 @@
 ﻿@inject IJSRuntime JSRuntime
 @inject NavigationManager NavManager
 @using Microsoft.JSInterop
+@using DummyClassLibrary
 
 <div>
     <strong>@Title</strong>
 
-    <p class="title">Visualization  for CSLY with Viz.js </p>
-   
-    
-    <div>
-
-        <label for="grammarFile" class="input-label">Importer un fichier grammaire</label>
-        <InputFile id="grammarFile" OnChange="LoadGrammar"/>
-        <label for="inputFile" class="input-label">Importer un fichier source</label>
-        <InputFile id="inputFile" OnChange="LoadGrammar"/>
-        <div class="input" style="display: flex; flex-direction: row">
-
-<div style="flex-grow:1">        
-            <textarea style="flex-grow: 1" id="grammarBox" maxlength="2000" spellcheck="false" @bind="grammar" />
-</div>
-
-<div style="flex-grow:1">                 
-            <textarea style="flex-grow: 1" i d="inputBox" maxlength="2000" spellcheck="false" @bind="source" />
-</div>
-            
-        </div>
+    <p class="title">Visualization  for C#, Blazor interop wrapper for Viz.js </p>
+    <p class="para">Viz.js, Emscripten version of Graphviz: <a href="https://github.com/mdaines/viz.js" target="_blank">https://github.com/mdaines/viz.js</a></p>
+    <p class="para">svg-pan-zoom.js, pan/zoom for HTML SVG: <a href="https://github.com/ariutta/svg-pan-zoom" target="_blank">https://github.com/ariutta/svg-pan-zoom</a></p>
+    <p class="para">Demo is visualization of C# Syntax, used Roslyn CSharpSyntaxWalker to generate Graphviz DOT language file </p>
+    <p class="title">Expression to process: </p>
+    <div class="input">
+        <textarea id="inputBox" maxlength="2000" spellcheck="false" @bind="expression" />
         <button id="submitButton" @onclick="Render">
             Render
         </button>
     </div>
     
 
-    <div id="graph" >
+    <div id="graph">
         <div id="output">
             <div id="error"></div>
           </div>
     </div>
+
 </div>
 
 @code {
@@ -44,175 +33,33 @@
     [Parameter]
     public string? Title { get; set; }
 
-    string source = @"
+    private string expression;
 
-while i < 10 do
-(
-   i := i + 1;
-   print ""hello""
-)";
-
-    string grammar = @"
-
-genericLexer WhileLexer;
-
-[String] STRING;
-[Int] INT;
-[AlphaId] ID; 
-
-
-[ KeyWord] IF:""if"";
-[ KeyWord] THEN:""then"";
-[ KeyWord] ELSE:""else"";
-[ KeyWord] WHILE:""while"";
-[ KeyWord] DO:""do"";
-[ KeyWord] SKIP:""skip"";
-[ KeyWord] TRUE:""true"";
-[ KeyWord] FALSE:""false"";
-[ KeyWord] NOT:""not"";
-[ KeyWord] AND:""and"";
-[ KeyWord] OR:""or"";
-[ KeyWord] PRINT:""print"";
-
- [Sugar] GREATER : "">"";
-
-[Sugar] LESSER : ""<"";
-
-[Sugar] EQUALS : ""=="";
-
-[Sugar] DIFFERENT : ""!="";
-
-[Sugar] CONCAT : ""."";
-
-[Sugar] ASSIGN : "":="";
-
-[Sugar] PLUS : ""+"";
-[Sugar] MINUS : ""-"";
-[Sugar] TIMES : ""*"";
-[Sugar] DIVIDE : ""/"";
-
-[Sugar] LPAREN : ""("";
-[Sugar] RPAREN : "")"";
-[Sugar] SEMICOLON : "";"";
-
-parser WhileParser;
-
-
-[Right 50] LESSER;
-[Right 50] GREATER;
-[Right 50] EQUALS;
-[Right 50]DIFFERENT;
-
-[Right 10] CONCAT;
-       
-[Right 10] PLUS;
-[Left 10] MINUS;
-[Right 50] TIMES;
-[Left 50]DIVIDE;
-
-[Prefix 100] MINUS;
-
-[Right 10] OR;
-[Right 50] AND;
-[Prefix 100] NOT;
-
-
--> statement :  LPAREN statement RPAREN ;
-
-
-statement : sequence;
-
-
-[Operand] operand : [INT | TRUE | FALSE | STRING | ID];
-[Operand] operand : LPAREN WhileParser_expressions RPAREN;
-
-sequence : [statementIf | statementWhile | statementAssign | statementSkip | statementPrint] additionalStatements*;
-
-additionalStatements : SEMICOLON [statementIf | statementWhile | statementAssign | statementSkip | statementPrint];
-
-statementIf: IF WhileParser_expressions THEN statement ELSE statement;
-
-statementWhile: WHILE WhileParser_expressions DO statement;
-
-statementAssign: ID ASSIGN WhileParser_expressions;
-
-statementSkip: SKIP;
-
-statementPrint: PRINT WhileParser_expressions;
-
-";
-
-    private string dot;
+    private Processing processing = new Processing();
 
     protected override async void OnInitialized()
     {
+        expression = "a = x + y * 5 / 4* (56 + 1);";
     }
 
-// private StandaloneCodeEditor _grammar;
-// private StandaloneCodeEditor _source;
 
-
-
-    private async Task LoadGrammar(InputFileChangeEventArgs e)
-    {
-        
-        var content = 
-            await new StreamReader(e.File.OpenReadStream()).ReadToEndAsync();
-        grammar = content;
-        //_grammar.SetValue(grammar);
-    }
-    
-    private async  Task LoadSource(InputFileChangeEventArgs e)
-    {
-        var content = 
-            await new StreamReader(e.File.OpenReadStream()).ReadToEndAsync();
-        source = content;
-        //_source.SetValue(source);
-    }
-
-    // private StandaloneEditorConstructionOptions GrammarConstructionOptions(StandaloneCodeEditor editor)
-    // {
-    //     
-    //     return new StandaloneEditorConstructionOptions
-    //     {
-    //         AutomaticLayout = true,
-    //         Value = grammar
-    //     };
-    // }
-    
-    // private StandaloneEditorConstructionOptions InputConstructionOptions(StandaloneCodeEditor editor)
-    // {
-    //     return new StandaloneEditorConstructionOptions
-    //     {
-    //         AutomaticLayout = true,
-    //         Value = source
-    //     };
-    // }
-    
     private async void Render()
     {
+        processing.Parse(expression);
 
-        // grammar = await _grammar.GetValue();
-        // source = await _source.GetValue();
-        
-        var dotresult = CslyProcessor.GetDot(grammar, source);
-        if (dotresult.IsOK)
+        if(processing.HasErrors())
         {
-            dot = dotresult.Result;
-            await VizRender(dot);
+            await AppendError(processing.Errors);
         }
         else
         {
-            foreach (var error in dotresult.Errors)
-            {
-                AppendError(error);
-            }
+            await VizRender(processing.GraphvizText);
         }
     }
 
-    public async Task VizRender(string graph) 
+    public async Task VizRender(string ast) 
     {
-        await JSRuntime.InvokeAsync<string>("vizRender",graph);     
+        await JSRuntime.InvokeAsync<string>("vizRender",ast);     
     }
 
     public async Task AppendError(string errorMessage) 
